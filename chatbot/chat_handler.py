@@ -92,6 +92,6 @@ def get_bot_response(user_input: str, session_state: dict) -> str:
     except Exception as e:
         return f"⚠️ I couldn’t find an answer using the knowledge base. Error: {e}"
 
-# Example of how to use this function:
+'''# Example of how to use this function:
 session_state = {}
-print(get_bot_response("What is electricity theft?", session_state))
+print(get_bot_response("What is electricity theft?", session_state))'''
