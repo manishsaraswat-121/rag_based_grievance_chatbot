@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+httpx
+langchain
+openai
+faiss-cpu
+streamlit
+pydantic
+python-dotenv
