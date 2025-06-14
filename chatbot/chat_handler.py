@@ -1,5 +1,6 @@
 import re
 import requests
+from chatbot.rag_chatbot import query_rag
 
 REGISTER_API = "http://localhost:8000/register"
 STATUS_API = "http://localhost:8000/status"
@@ -7,19 +8,18 @@ STATUS_API = "http://localhost:8000/status"
 def get_bot_response(user_input: str, session_state: dict) -> str:
     user_input = user_input.strip()
     lower_input = user_input.lower()
-    greetings = ["hi", "hlo","hello", "hey", "good morning", "good evening"]
+    greetings = ["hi", "hlo", "hello", "hey", "good morning", "good evening"]
 
-    # Handle greeting
+    # Greeting
     if any(greet in lower_input for greet in greetings):
-        return ("👋 Hello! I’m your grievance assistant bot.\n"
+        return ("\U0001F44B Hello! I’m your grievance assistant bot.\n"
                 "You can say things like:\n"
                 "• 'I want to register a complaint'\n"
                 "• 'What’s the status of my complaint?'\n"
                 "How may I help you today?")
 
-    # Handle registration flow
+    # Register complaint
     if 'register' in lower_input or ('complaint' in lower_input and 'track' not in lower_input and 'status' not in lower_input):
-
         session_state.clear()
         session_state["mode"] = "register"
         session_state["step"] = "ask_name"
@@ -58,7 +58,7 @@ def get_bot_response(user_input: str, session_state: dict) -> str:
                     return f"⚠️ Server error: {e}"
             return "Please describe your complaint in more detail."
 
-    # Handle status flow
+    # Status inquiry
     if "status" in lower_input or "track" in lower_input:
         session_state.clear()
         session_state["mode"] = "status"
@@ -85,4 +85,13 @@ def get_bot_response(user_input: str, session_state: dict) -> str:
         else:
             return "Please enter a valid 10-digit mobile number or Complaint ID (e.g., CMP1234)."
 
-    return "🤖 I'm here to assist you. You can say 'register a complaint' or 'check complaint status'."
+    # Fallback to RAG for general queries
+    try:
+        rag_answer = query_rag(user_input)
+        return f"💡 Here's what I found:\n{rag_answer}"
+    except Exception as e:
+        return f"⚠️ I couldn’t find an answer using the knowledge base. Error: {e}"
+
+# Example of how to use this function:
+session_state = {}
+print(get_bot_response("What is electricity theft?", session_state))
