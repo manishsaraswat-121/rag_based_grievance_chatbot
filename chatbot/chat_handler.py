@@ -88,7 +88,10 @@ def get_bot_response(user_input: str, session_state: dict) -> str:
     # Fallback to RAG for general queries
     try:
         rag_answer = query_rag(user_input)
-        return f"💡 Here's what I found:\n{rag_answer}"
+        print("rag_answer")
+        if rag_answer and len(rag_answer.strip()) > 0:
+            return f"\U0001F4A1 Here's what I found:\n{rag_answer}"
+        return "❓ I'm not sure how to answer that. Could you rephrase your question?"
     except Exception as e:
         return f"⚠️ I couldn’t find an answer using the knowledge base. Error: {e}"
 
