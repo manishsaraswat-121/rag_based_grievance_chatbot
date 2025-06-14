@@ -36,6 +36,7 @@ A smart and interactive grievance assistant built using **FastAPI, LangChain, Op
 🚀 Lightweight and beginner-friendly setup
 
 **Tech Stack:**
+
 _Backend_: FastAPI
 
 _Frontend/UI_: Streamlit
