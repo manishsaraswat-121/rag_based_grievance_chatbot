@@ -1,56 +1,94 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from api.db import insert_complaint, get_complaint_by_id, get_complaint_by_mobile
+from fastapi.responses import PlainTextResponse
+from pydantic import BaseModel, Field, EmailStr
+from datetime import datetime
+import re
+import random
 
-app = FastAPI()
+from api.db import insert_complaint, get_complaint_by_id
 
-class RegisterRequest(BaseModel):
-    name: str = Field(..., pattern=r"^[A-Za-z ]+$", description="Name should contain only letters and spaces.")
-    mobile: str = Field(..., pattern=r"^\d{10}$", description="Enter a valid 10-digit mobile number.")
-    complaint: str = Field(..., min_length=10, description="Complaint must be at least 10 characters.")
+app = FastAPI(title="Grievance Complaint API")
 
-class StatusResponse(BaseModel):
+
+class ComplaintCreate(BaseModel):
+    name: str = Field(..., min_length=2)
+    phone_number: str = Field(..., pattern=r"^\d{10}$", description="Enter a valid 10-digit phone number.")
+    email: EmailStr
+    complaint_details: str = Field(..., min_length=10)
+
+
+class ComplaintResponse(BaseModel):
     complaint_id: str
     name: str
-    mobile: str
-    complaint: str
-    status: str
+    phone_number: str
+    email: str
+    complaint_details: str
+    created_at: str
 
-@app.post("/register")
-async def register_complaint(request: RegisterRequest):
-    try:
-        # Generate unique complaint ID
-        complaint_id = f"CMP{abs(hash(request.mobile + request.complaint)) % 10000:04}"
 
-        result = {
+def generate_complaint_id() -> str:
+    """Generates a complaint ID like CMP1234"""
+    return f"CMP{random.randint(1000, 9999)}"
+
+
+@app.post("/complaints", response_model=dict)
+def create_complaint(data: ComplaintCreate):
+    created_at = datetime.now().isoformat()
+
+    # Try up to 5 times to generate a unique complaint ID
+    for _ in range(5):
+        complaint_id = generate_complaint_id()
+
+        complaint_data = {
             "complaint_id": complaint_id,
-            "name": request.name.strip().title(),
-            "mobile": request.mobile.strip(),
-            "complaint": request.complaint.strip(),
-            "status": "Registered"
+            "name": data.name.strip().title(),
+            "phone_number": data.phone_number.strip(),
+            "email": data.email.strip().lower(),
+            "complaint_details": data.complaint_details.strip(),
+            "created_at": created_at
         }
 
-        insert_complaint(result)
-        return {"complaint_id": complaint_id}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"❌ Failed to register complaint: {str(e)}")
+        try:
+            inserted_id = insert_complaint(complaint_data)
+            if inserted_id != complaint_id:
+                return {
+                    "complaint_id": inserted_id,
+                    "message": f"⚠️ Complaint already exists. Reusing Complaint ID: {inserted_id}"
+                }
 
-@app.get("/status/{query}", response_model=StatusResponse)
-async def get_status(query: str):
-    query = query.strip()
+            return {
+                "complaint_id": inserted_id,
+                "message": "✅ Complaint created successfully"
+            }
+        except Exception as e:
+            if "UNIQUE constraint failed" in str(e):
+                continue
+            raise HTTPException(status_code=500, detail=f"❌ Failed to register complaint: {str(e)}")
 
-    result = None
-    if query.upper().startswith("CMP"):
-        result = get_complaint_by_id(query.upper())
-    elif query.isdigit() and len(query) == 10:
-        result = get_complaint_by_mobile(query)
-    else:
+    raise HTTPException(status_code=500, detail="❌ Failed to generate unique complaint ID. Please try again.")
+
+
+@app.get("/complaints/{complaint_id}", response_class=PlainTextResponse)
+def get_complaint(complaint_id: str):
+    complaint_id = complaint_id.strip().upper()
+
+    if not re.fullmatch(r"CMP\d{4}", complaint_id):
         raise HTTPException(
             status_code=400,
-            detail="❌ Invalid input. Please provide a valid 10-digit mobile number or Complaint ID (e.g., CMP1234)."
+            detail="❌ Invalid Complaint ID format. Use format like CMP1234."
         )
 
-    if result:
-        return result
+    result = get_complaint_by_id(complaint_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="❌ Complaint not found.")
 
-    raise HTTPException(status_code=404, detail="❌ Complaint not found. Please verify the ID or mobile number.")
+    # Return plain text response with line breaks
+    return (
+        f"Complaint Details:\n"
+        f"• Complaint ID: {result['complaint_id']}\n"
+        f"• Name: {result['name']}\n"
+        f"• Phone: {result['phone_number']}\n"
+        f"• Email: {result['email']}\n"
+        f"• Complaint: {result['complaint_details']}\n"
+        f"• Created At: {result['created_at']}"
+    )

@@ -36,4 +36,4 @@ if user_input:
     bot_response = get_bot_response(user_input, st.session_state.chat_state)
     st.session_state.messages.append({"role": "assistant", "content": bot_response})
     with st.chat_message("assistant"):
-        st.markdown(bot_response)
+        st.markdown(f"```\n{bot_response}\n```")
