@@ -24,7 +24,7 @@ A smart and interactive grievance assistant built using FastAPI, LangChain, Open
 
 - Complaint registration with validation  
 - 📱 Track complaint status using mobile number or complaint ID  
-- 🧠 LLM-powered assistant (Grok-1 via OpenRouter)  
+- 🧠 LLM-powered assistant (mistral-7b-instruct via OpenRouter)  
 - 🔎 RAG-based contextual answers from uploaded PDF knowledge base  
 - 🗃️ SQLite for complaint storage  
 - 📊 Interactive UI built with Streamlit  
@@ -39,6 +39,6 @@ A smart and interactive grievance assistant built using FastAPI, LangChain, Open
 - **Frontend/UI:** Streamlit  
 - **Database:** SQLite  
 - **Vector Store:** FAISS  
-- **LLM Provider:** OpenRouter (grok-3-beta)  
+- **LLM Provider:** OpenRouter (mistral-7b-instruct)  
 - **RAG Framework:** LangChain  
 - **Embeddings:** OpenAIEmbeddings
