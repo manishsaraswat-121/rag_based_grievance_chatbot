@@ -1,13 +1,19 @@
 import streamlit as st
 from chatbot.chat_handler import get_bot_response
+from dotenv import load_dotenv
+import os
 
+# Load environment variables
+load_dotenv()
+
+# Streamlit page setup
 st.set_page_config(page_title="Grievance Assistant Bot", page_icon="🤖")
-
 st.title("🤖 Grievance Assistant Bot")
 
 # Initialize session state
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
 if "chat_state" not in st.session_state:
     st.session_state.chat_state = {}
 
@@ -15,7 +21,7 @@ if "chat_state" not in st.session_state:
 if st.button("🔄 Reset Chat"):
     st.session_state.messages = []
     st.session_state.chat_state = {}
-    st.rerun()  
+    st.rerun()
 
 # Display chat history
 for msg in st.session_state.messages:
@@ -32,8 +38,13 @@ if user_input:
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    # Get bot response
-    bot_response = get_bot_response(user_input, st.session_state.chat_state)
+    try:
+        # Get bot response
+        bot_response = get_bot_response(user_input, st.session_state.chat_state)
+    except Exception as e:
+        bot_response = f"❌ Error: {e}"
+
+    # Display bot response
     st.session_state.messages.append({"role": "assistant", "content": bot_response})
     with st.chat_message("assistant"):
         st.markdown(f"```\n{bot_response}\n```")
