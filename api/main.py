@@ -30,7 +30,10 @@ def generate_complaint_id() -> str:
     """Generates a complaint ID like CMP1234"""
     return f"CMP{random.randint(1000, 9999)}"
 
-
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Grievance Chatbot API!"}
+    
 @app.post("/complaints", response_model=dict)
 def create_complaint(data: ComplaintCreate):
     created_at = datetime.now().isoformat()
