@@ -10,6 +10,7 @@ openai==1.85.0
 faiss-cpu==1.11.0
 python-dotenv==1.1.0
 pydantic==2.10.6
+pydantic[email]
 pydantic-settings==2.9.1
 SQLAlchemy==2.0.41
 httpx==0.28.1
