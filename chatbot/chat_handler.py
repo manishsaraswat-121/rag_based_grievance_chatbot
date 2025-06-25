@@ -17,9 +17,20 @@ def get_bot_response(user_input: str, session_state: dict) -> str:
                 "• 'I want to register a complaint'\n"
                 "• 'What’s the status of my complaint?'\n"
                 "How may I help you today?")
+    # Status inquiry
+    if "status" in lower_input or "track" in lower_input or "query" in lower_input:
+        session_state.clear()
+        session_state["mode"] = "status"
+        session_state["step"] = "ask_query"
+        return "Sure, I can help you with that. Please enter your Complaint ID (e.g., CMP1234)."
 
     # Register complaint
-    if 'register' in lower_input or ('complaint' in lower_input and 'track' not in lower_input and 'status' not in lower_input):
+    if 'register' in lower_input or (
+    'complaint' in lower_input and
+    'track' not in lower_input and
+    'query' not in lower_input and
+    'status' not in lower_input
+    ):
         session_state.clear()
         session_state["mode"] = "register"
         session_state["step"] = "ask_name"
@@ -71,13 +82,7 @@ def get_bot_response(user_input: str, session_state: dict) -> str:
                     return f"⚠️ Server error: {e}"
             return "Please describe your complaint in more detail."
 
-    # Status inquiry
-    if "status" in lower_input or "track" in lower_input:
-        session_state.clear()
-        session_state["mode"] = "status"
-        session_state["step"] = "ask_query"
-        return "Sure, I can help you with that. Please enter your Complaint ID (e.g., CMP1234)."
-
+    
     if session_state.get("mode") == "status" and session_state.get("step") == "ask_query":
         query = user_input.strip().upper()
         if re.fullmatch(r"CMP\d{4}", query):
