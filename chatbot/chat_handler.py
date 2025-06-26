@@ -2,8 +2,8 @@ import re
 import requests
 from chatbot.rag_chatbot import query_rag
 
-REGISTER_API = "https://rag-based-grievance-chatbot.onrender.com/register"
-STATUS_API = "https://rag-based-grievance-chatbot.onrender.com/complaint/{complaint_id}"
+REGISTER_API = "https://rag-based-grievance-chatbot.onrender.com/complaints"
+STATUS_API = "https://rag-based-grievance-chatbot.onrender.com/complaints/{complaint_id}"
 
 def get_bot_response(user_input: str, session_state: dict) -> str:
     user_input = user_input.strip()
