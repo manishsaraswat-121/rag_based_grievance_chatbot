@@ -5,7 +5,7 @@ A smart and interactive grievance assistant built using FastAPI, LangChain, Open
 ## 📖 Getting Started
 
 1. Clone the repo:  
-   `git clone https://github.com/your-username/rag-complaint-bot.git`
+   `git clone https://github.com/manishsaraswat-121/rag_based_grievance_chatbot.git
 
 2. Install dependencies:  
    `pip install -r requirements.txt`
